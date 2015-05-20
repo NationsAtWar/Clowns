@@ -1,14 +1,14 @@
 [
 {
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
+  "modid": "clowns",
+  "name": "Clowns",
+  "description": "NPCs mod",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
-  "authorList": ["ExampleDude"],
-  "credits": "The Forge and FML guys, for making this example",
+  "authorList": ["Aculem"],
+  "credits": "The Nations at War staff",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
