@@ -7,7 +7,11 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 
+import org.nationsatwar.clowns.entities.ClownEntity;
+import org.nationsatwar.clowns.events.ChatCommands;
 import org.nationsatwar.clowns.proxy.CommonProxy;
 
 @Mod(modid = Clowns.MODID, 
@@ -43,6 +47,12 @@ public class Clowns {
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
 		
+		EntityRegistry.registerModEntity(ClownEntity.class, "Clown", 0, instance, 80, 3, false);
+	}
+	
+	@EventHandler
+	public void commandEvent(FMLServerStartingEvent event) {
 		
+		event.registerServerCommand(new ChatCommands());
 	}
 }
