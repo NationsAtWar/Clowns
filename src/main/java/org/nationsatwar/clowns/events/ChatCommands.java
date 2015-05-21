@@ -9,7 +9,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 
-import org.nationsatwar.clowns.entities.ClownEntity;
+import org.nationsatwar.clowns.entities.GenericNPC;
 
 public class ChatCommands implements ICommand {
 	
@@ -61,10 +61,10 @@ public class ChatCommands implements ICommand {
 			
 			System.out.println("I know you're out there");
 			
-			ClownEntity clown = new ClownEntity(sender.getEntityWorld());
-			clown.setPositionAndUpdate(sender.getPosition().getX(), sender.getPosition().getY(), sender.getPosition().getZ());
+			GenericNPC npc = new GenericNPC(sender.getEntityWorld());
+			npc.setPositionAndUpdate(sender.getPosition().getX(), sender.getPosition().getY(), sender.getPosition().getZ());
 			
-			sender.getEntityWorld().spawnEntityInWorld(clown);
+			sender.getEntityWorld().spawnEntityInWorld(npc);
 		}
 	}
 
