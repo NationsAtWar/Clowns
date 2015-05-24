@@ -1,5 +1,8 @@
 package org.nationsatwar.clowns.gui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -15,31 +18,42 @@ import org.nationsatwar.palette.gui.GUIScreen;
 
 public class ChatGUI extends GUIScreen {
 	
+	public static final int maxDialogueOptions = 4;
+	
 	public static GenericNPC activeNPC;
 	
 	private EditGUI editGUI;
 	
-	protected GUIButton editButton;
-	protected GUILabel dialogue;
+	protected String dialogue = "";
+	
+	private GUIButton editButton;
+	private List<OptionButton> dialogueOptions;
 	
 	public ChatGUI() {
 		
 		editGUI = new EditGUI(this);
+		dialogueOptions = new ArrayList<OptionButton>();
 	}
 	
 	@Override
 	protected void setElements() {
 		
-		this.setWindow(width / 2 - 100, 20, 200, 160);
+		setWindow(width / 2 - 128, 20, 256, 160);
 		
 		if (activeNPC == null)
 			return;
 		
 		addLabel(windowX + 20, windowY + 20, activeNPC.getName());
 		
-		dialogue = addLabel(windowX + 20, windowY + 50, "A bunch of dialogue for you to read.");
-		
 		editButton = addButton(windowX + windowWidth - 70, windowY + 20, 50, 20, "Edit");
+		
+		// Dialogue Text
+		GUILabel dialogueLabel = addLabel(windowX + 20, windowY + 40, dialogue);
+		dialogueLabel.setWordWrap(160);
+		
+		// Dialogue Options
+		for (GUIButton dialogueOption : dialogueOptions)
+			addButton(dialogueOption);
 	}
 
 	@Override
@@ -53,9 +67,26 @@ public class ChatGUI extends GUIScreen {
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		
 		if (activeNPC != null)
-			drawEntityOnScreen(350, height / 2 + 50, 50, mouseX, mouseY + 100, activeNPC);
+			drawEntityOnScreen(windowX + windowWidth - 50, height / 2 + 50, 50, mouseX, mouseY + 100, activeNPC);
 		
 		super.drawScreen(mouseX, mouseY, partialTicks);
+	}
+	
+	protected void addDialogueOption() {
+		
+		int buttonID = dialogueOptions.size();
+		
+		if (buttonID >= maxDialogueOptions)
+			return;
+		
+		OptionButton optionButton = new OptionButton(windowX + 20, 90 + (buttonID * 23), 150, 20, "Option " + buttonID + 1);
+		
+		dialogueOptions.add(optionButton);
+	}
+	
+	protected List<OptionButton> getDialogueOptions() {
+		
+		return dialogueOptions;
 	}
 
     /**
@@ -102,5 +133,15 @@ public class ChatGUI extends GUIScreen {
         GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
         GlStateManager.disableTexture2D();
         GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+    }
+    
+    public String getDialogue() {
+    	
+    	return dialogue;
+    }
+    
+    public void setDialogue(String dialogue) {
+    	
+    	this.dialogue = dialogue;
     }
 }

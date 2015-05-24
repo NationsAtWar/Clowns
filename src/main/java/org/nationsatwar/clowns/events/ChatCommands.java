@@ -59,28 +59,26 @@ public class ChatCommands implements ICommand {
 		
 		if (command.equals("spawn")) {
 			
-			System.out.println("I know you're out there");
-			
-			GenericNPC npc = new GenericNPC(sender.getEntityWorld());
+			GenericNPC npc = new GenericNPC(sender.getEntityWorld(), "Generic NPC2");
 			npc.setPositionAndUpdate(sender.getPosition().getX(), sender.getPosition().getY(), sender.getPosition().getZ());
 			
 			sender.getEntityWorld().spawnEntityInWorld(npc);
 		}
 	}
-
+	
 	@Override
 	public boolean canCommandSenderUse(ICommandSender sender) {
 		
 		return true;
 	}
-
+	
 	@Override
 	public List<?> addTabCompletionOptions(ICommandSender sender, String[] args,
 			BlockPos pos) {
 		
 		return null;
 	}
-
+	
 	@Override
 	public boolean isUsernameIndex(String[] args, int index) {
 		
