@@ -52,6 +52,6 @@ public class Clowns {
 	@EventHandler
 	public void commandEvent(FMLServerStartingEvent event) {
 		
-		event.registerServerCommand(new ChatCommands());
+		event.registerServerCommand(new ChatCommands("clown"));
 	}
 }

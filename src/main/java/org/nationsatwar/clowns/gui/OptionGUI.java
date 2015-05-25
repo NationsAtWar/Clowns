@@ -11,21 +11,22 @@ import org.nationsatwar.palette.gui.GUITextField;
 public class OptionGUI extends GUIScreen {
 	
 	private OptionButton optionButton;
-	
+
+	private ChatGUI chatGUI;
 	private EditGUI editGUI;
 	
 	private GUIButton deleteButton;
 	private GUIButton returnButton;
 	
 	private GUIButton actionButton;
-	private GUITextField actionField;
 	
 	private GUITextField textField;
 	private GUITextField pageField;
 	private GUITextField itemField;
 	
-	public OptionGUI(EditGUI editGUI) {
+	public OptionGUI(ChatGUI chatGUI, EditGUI editGUI) {
 		
+		this.chatGUI = chatGUI;
 		this.editGUI = editGUI;
 	}
 	
@@ -36,16 +37,26 @@ public class OptionGUI extends GUIScreen {
 		
 		optionButton = editGUI.activeOption;
 		
-		deleteButton = addButton(windowX + 20, windowY + 20, 50, 20, "Delete");
-		returnButton = addButton(windowX + 20, windowY + 50, 50, 20, "Return");
+		// Option Text
+		addLabel(windowX + 20, windowY + 25, "Option Text");
+		textField = addTextField(windowX + 15, windowY + 45, 150, 20, optionButton.displayString);
 		
-		actionButton = addButton(windowX + 20, windowY + 80, 50, 20, "Action");
-		actionField = addTextField(windowX + 90, windowY + 80, 50, 20, "");
+		// Miscellaneous Buttons
+		returnButton = addButton(windowX + windowWidth - 70, windowY + 20, 50, 20, "Return");
+		deleteButton = addButton(windowX + windowWidth - 70, windowY + 40, 50, 20, "Delete");
 		
-		textField = addTextField(windowX + 20, windowY + 110, 50, 20, optionButton.displayString);
-		pageField = addTextField(windowX + 20, windowY + 140, 50, 20, "0");
+		// Screen Number
+		addLabel(windowX + 20, windowY + 80, "Change to Window (0 Exits)");
+		pageField = addTextField(windowX + 160, windowY + 75, 20, 20, optionButton.getPageNumber() + "");
 		pageField.setRegEx(RegExHelper.NUMBERS);
-		itemField = addTextField(windowX + 20, windowY + 170, 50, 20, "Item");
+		
+		// Action Button
+		addLabel(windowX + 150, windowY + 115, "Custom Action");
+		actionButton = addButton(windowX + 130, windowY + 135, 100, 20, "Nothing");
+		
+		// Give Item
+		addLabel(windowX + 20, windowY + 115, "Give Item");
+		itemField = addTextField(windowX + 15, windowY + 135, 80, 20, optionButton.getItemName());
 	}
 	
 	@Override
@@ -54,22 +65,25 @@ public class OptionGUI extends GUIScreen {
 		super.keyTyped(typedChar, keyCode);
 		
 		optionButton.displayString = textField.getText();
+		optionButton.setItemName(itemField.getText());
 		
-		if (actionField.getText().equals(""))
-			return;
-		
-		if (pageField.getText().equals(""))
-			return;
-		
-		if (itemField.getText().equals(""))
-			return;
+		try {
+			
+			if (!pageField.getText().isEmpty())
+				optionButton.setPageNumber(Integer.parseInt(pageField.getText()));
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
 	protected void buttonClicked(GUIButton button) {
 		
-		if (button.equals(deleteButton))
-			return;
+		if (button.equals(deleteButton)) {
+			
+			chatGUI.removeDialogueOption(optionButton);
+			GUIHandler.openGUI(editGUI, false);
+		}
 		
 		if (button.equals(returnButton))
 			GUIHandler.openGUI(editGUI, false);

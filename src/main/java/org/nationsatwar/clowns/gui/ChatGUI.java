@@ -9,8 +9,10 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.Item;
 
 import org.nationsatwar.clowns.entities.GenericNPC;
+import org.nationsatwar.palette.ItemHelper;
 import org.nationsatwar.palette.gui.GUIButton;
 import org.nationsatwar.palette.gui.GUIHandler;
 import org.nationsatwar.palette.gui.GUILabel;
@@ -22,6 +24,8 @@ public class ChatGUI extends GUIScreen {
 	
 	public static GenericNPC activeNPC;
 	
+	private int screenID;
+	
 	private EditGUI editGUI;
 	
 	protected String dialogue = "";
@@ -29,7 +33,9 @@ public class ChatGUI extends GUIScreen {
 	private GUIButton editButton;
 	private List<OptionButton> dialogueOptions;
 	
-	public ChatGUI() {
+	public ChatGUI(int screenID) {
+		
+		this.screenID = screenID;
 		
 		editGUI = new EditGUI(this);
 		dialogueOptions = new ArrayList<OptionButton>();
@@ -61,6 +67,26 @@ public class ChatGUI extends GUIScreen {
 		
 		if (button.equals(editButton))
 			GUIHandler.openGUI(editGUI, false);
+		
+		for (OptionButton optionButton : dialogueOptions) {
+			
+			if (button.equals(optionButton)) {
+				
+				// Changes Screen Window
+				ChatGUI chatGUI = ChatGUI.activeNPC.getDialogueWindow(optionButton.getPageNumber());
+				
+				if (chatGUI != null)
+					GUIHandler.openGUI(chatGUI, false);
+				else
+					player.closeScreen();
+				
+				// Gives item
+				String itemName = optionButton.getItemName();
+				Item item = Item.getByNameOrId(itemName);
+				
+				ItemHelper.giveItemToPlayer(player, item, 1);
+			}
+		}
 	}
 	
 	@Override
@@ -79,7 +105,7 @@ public class ChatGUI extends GUIScreen {
 		if (buttonID >= maxDialogueOptions)
 			return;
 		
-		OptionButton optionButton = new OptionButton(windowX + 20, 90 + (buttonID * 23), 150, 20, "Option " + buttonID + 1);
+		OptionButton optionButton = new OptionButton(windowX + 15, 90 + (buttonID * 23), 150, 20, "Option " + (buttonID + 1));
 		
 		dialogueOptions.add(optionButton);
 	}
@@ -87,6 +113,15 @@ public class ChatGUI extends GUIScreen {
 	protected List<OptionButton> getDialogueOptions() {
 		
 		return dialogueOptions;
+	}
+	
+	protected void removeDialogueOption(OptionButton optionButton) {
+		
+		dialogueOptions.remove(optionButton);
+		
+		for (int i = 0; i < dialogueOptions.size(); i++)
+			if (dialogueOptions.get(i) != null)
+				dialogueOptions.get(i).yPosition = (90 + (i * 23));
 	}
 
     /**
@@ -143,5 +178,15 @@ public class ChatGUI extends GUIScreen {
     public void setDialogue(String dialogue) {
     	
     	this.dialogue = dialogue;
+    }
+    
+    public int getScreenID() {
+    	
+    	return screenID;
+    }
+    
+    public EditGUI getEditGUI() {
+    	
+    	return editGUI;
     }
 }

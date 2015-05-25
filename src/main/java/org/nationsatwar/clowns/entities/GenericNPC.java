@@ -18,7 +18,7 @@ public class GenericNPC extends EntityVillager {
 	
 	private String name;
 	
-	private Map<Integer, ChatGUI> dialogueWindows = new HashMap<Integer, ChatGUI>();
+	protected Map<Integer, ChatGUI> dialogueWindows = new HashMap<Integer, ChatGUI>();
 
 	public GenericNPC(World worldIn) {
 		
@@ -35,7 +35,7 @@ public class GenericNPC extends EntityVillager {
 		this.name = name;
 		setCustomNameTag(name);
 		
-		dialogueWindows.put(1, new ChatGUI());
+		dialogueWindows.put(1, new ChatGUI(1));
 	}
 	
 	@Override
@@ -77,7 +77,7 @@ public class GenericNPC extends EntityVillager {
 		
 		super.readFromNBT(tagCompound);
 		
-		dialogueWindows.put(1, new ChatGUI());
+		dialogueWindows.put(1, new ChatGUI(1));
 		
 		// Load all additional information here
 		try {
@@ -97,5 +97,108 @@ public class GenericNPC extends EntityVillager {
 	public String getName() {
 		
 		return name;
+	}
+	
+	public void setName(String name) {
+		
+		this.name = name;
+		this.setCustomNameTag(name);
+	}
+	
+	public ChatGUI addDialogueWindow() {
+		
+		int screenID = getNextScreenID();
+		ChatGUI newChatGUI = new ChatGUI(screenID);
+		
+		dialogueWindows.put(screenID, newChatGUI);
+		return newChatGUI;
+	}
+	
+	protected ChatGUI addDialogueWindow(int screenID) {
+		
+		ChatGUI newChatGUI = new ChatGUI(screenID);
+		
+		dialogueWindows.put(screenID, newChatGUI);
+		return newChatGUI;
+	}
+	
+	public int getNextScreenID() {
+		
+		int nextID = 1;
+		
+		while (true) {
+			
+			if (dialogueWindows.containsKey(nextID))
+				nextID++;
+			else
+				return nextID;
+		}
+	}
+	
+	public int numberOfDialogueWindows() {
+		
+		return dialogueWindows.size();
+	}
+	
+	public int getPreviousDialogueWindowID(int currentWindowID) {
+		
+		int previousWindowID = currentWindowID;
+		int closestID = 0;
+		
+		for (int windowID : dialogueWindows.keySet()) {
+			
+			int difference = currentWindowID - windowID;
+			
+			if (difference <= 0)
+				continue;
+			
+			if (closestID == 0) {
+				closestID = difference;
+				previousWindowID = windowID;
+			}
+			
+			if (closestID != 0 && difference < closestID) {
+				closestID = difference;
+				previousWindowID = windowID;
+			}
+		}
+		
+		return previousWindowID;
+	}
+	
+	public int getNextDialogueWindowID(int currentWindowID) {
+		
+		int nextWindowID = currentWindowID;
+		int closestID = 0;
+		
+		for (int windowID : dialogueWindows.keySet()) {
+			
+			int difference = windowID - currentWindowID;
+			
+			if (difference <= 0)
+				continue;
+			
+			if (closestID == 0) {
+				closestID = difference;
+				nextWindowID = windowID;
+			}
+			
+			if (closestID != 0 && difference < closestID) {
+				closestID = difference;
+				nextWindowID = windowID;
+			}
+		}
+		
+		return nextWindowID;
+	}
+	
+	public ChatGUI getDialogueWindow(int windowID) {
+		
+		return dialogueWindows.get(windowID);
+	}
+	
+	public void deleteDialogueWindow(int windowID) {
+		
+		dialogueWindows.remove(windowID);
 	}
 }

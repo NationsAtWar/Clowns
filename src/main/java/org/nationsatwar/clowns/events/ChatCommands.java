@@ -1,48 +1,20 @@
 package org.nationsatwar.clowns.events;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.BlockPos;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 
 import org.nationsatwar.clowns.entities.GenericNPC;
+import org.nationsatwar.clowns.entities.NPCInfo;
+import org.nationsatwar.palette.CommandEvent;
+import org.nationsatwar.palette.database.JSONUtil;
 
-public class ChatCommands implements ICommand {
+public class ChatCommands extends CommandEvent {
 	
-	private List<String> aliases;
-	
-	public ChatCommands() {
+	public ChatCommands(String command) {
 		
-		aliases = new ArrayList<String>();
-		aliases.add("clown");
-	}
-
-	@Override
-	public int compareTo(Object o) {
-		
-		return 0;
-	}
-
-	@Override
-	public String getName() {
-		
-		return "clown";
-	}
-
-	@Override
-	public String getCommandUsage(ICommandSender sender) {
-		
-		return "clown <command>";
-	}
-
-	@Override
-	public List<String> getAliases() {
-		
-		return aliases;
+		super(command);
 	}
 	
 	@Override
@@ -59,29 +31,34 @@ public class ChatCommands implements ICommand {
 		
 		if (command.equals("spawn")) {
 			
-			GenericNPC npc = new GenericNPC(sender.getEntityWorld(), "Generic NPC2");
-			npc.setPositionAndUpdate(sender.getPosition().getX(), sender.getPosition().getY(), sender.getPosition().getZ());
-			
-			sender.getEntityWorld().spawnEntityInWorld(npc);
+			// Spawn specific NPC if specified
+			if (args.length > 1) {
+				
+				String name = combineArgs(args, 1);
+				
+				if (!(sender instanceof EntityPlayer))
+					return;
+				
+				EntityPlayer player = (EntityPlayer) sender;
+				
+				GenericNPC npc = new GenericNPC(player.worldObj, "");
+				
+				npc.setPositionAndUpdate(sender.getPosition().getX(), sender.getPosition().getY(), sender.getPosition().getZ());
+				sender.getEntityWorld().spawnEntityInWorld(npc);
+				
+				NPCInfo npcInfo = new NPCInfo(npc);
+				npcInfo = (NPCInfo) JSONUtil.loadObject("clowns", name, npcInfo);
+				
+				if (npcInfo != null)
+					npcInfo.loadNPCInfo(npc);
+				
+			} else { // Else spawn a Generic NPC
+				
+				GenericNPC npc = new GenericNPC(sender.getEntityWorld(), "Generic NPC");
+				npc.setPositionAndUpdate(sender.getPosition().getX(), sender.getPosition().getY(), sender.getPosition().getZ());
+				
+				sender.getEntityWorld().spawnEntityInWorld(npc);
+			}
 		}
-	}
-	
-	@Override
-	public boolean canCommandSenderUse(ICommandSender sender) {
-		
-		return true;
-	}
-	
-	@Override
-	public List<?> addTabCompletionOptions(ICommandSender sender, String[] args,
-			BlockPos pos) {
-		
-		return null;
-	}
-	
-	@Override
-	public boolean isUsernameIndex(String[] args, int index) {
-		
-		return false;
 	}
 }
