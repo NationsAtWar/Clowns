@@ -52,7 +52,7 @@ public class OptionGUI extends GUIScreen {
 		
 		// Action Button
 		addLabel(windowX + 150, windowY + 115, "Custom Action");
-		actionButton = addButton(windowX + 130, windowY + 135, 100, 20, "Nothing");
+		actionButton = addButton(windowX + 130, windowY + 135, 100, 20, optionButton.getAction());
 		
 		// Give Item
 		addLabel(windowX + 20, windowY + 115, "Give Item");
@@ -88,7 +88,14 @@ public class OptionGUI extends GUIScreen {
 		if (button.equals(returnButton))
 			GUIHandler.openGUI(editGUI, false);
 		
-		if (button.equals(actionButton))
-			return;
+		if (button.equals(actionButton)) {
+			
+			String currentAction = optionButton.getAction();
+			String nextAction = ChatGUI.activeNPC.getNextCustomActionName(currentAction);
+			
+			optionButton.setAction(nextAction);
+			
+			GUIHandler.openGUI(this, false);
+		}
 	}
 }

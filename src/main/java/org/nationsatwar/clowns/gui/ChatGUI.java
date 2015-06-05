@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 
+import org.nationsatwar.clowns.actions.CustomAction;
 import org.nationsatwar.clowns.entities.GenericNPC;
 import org.nationsatwar.palette.ItemHelper;
 import org.nationsatwar.palette.gui.GUIButton;
@@ -45,6 +46,7 @@ public class ChatGUI extends GUIScreen {
 	protected void setElements() {
 		
 		setWindow(width / 2 - 128, 20, 256, 160);
+		correctOptionsPos();
 		
 		if (activeNPC == null)
 			return;
@@ -80,10 +82,18 @@ public class ChatGUI extends GUIScreen {
 				else
 					player.closeScreen();
 				
+				// Fires Custom Action
+				CustomAction customAction = activeNPC.getCustomAction(optionButton.getAction());
+				if (customAction != null)
+					customAction.fireAction();
+				
 				// Gives item
 				String itemName = optionButton.getItemName();
-				Item item = Item.getByNameOrId(itemName);
 				
+				if (itemName.isEmpty())
+					continue;
+				
+				Item item = Item.getByNameOrId(itemName);
 				ItemHelper.giveItemToPlayer(player, item, 1);
 			}
 		}
@@ -98,19 +108,30 @@ public class ChatGUI extends GUIScreen {
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}
 	
-	protected void addDialogueOption() {
+	private void correctOptionsPos() {
+		
+		for (OptionButton optionButton : dialogueOptions)
+			optionButton.xPosition = windowX + 15;
+	}
+	
+	public OptionButton addDialogueOption() {
 		
 		int buttonID = dialogueOptions.size();
 		
 		if (buttonID >= maxDialogueOptions)
-			return;
+			return null;
 		
 		OptionButton optionButton = new OptionButton(windowX + 15, 90 + (buttonID * 23), 150, 20, "Option " + (buttonID + 1));
 		
 		dialogueOptions.add(optionButton);
+		
+		return optionButton;
 	}
 	
-	protected List<OptionButton> getDialogueOptions() {
+	public List<OptionButton> getDialogueOptions() {
+		
+		if (windowX != 0)
+			correctOptionsPos();
 		
 		return dialogueOptions;
 	}

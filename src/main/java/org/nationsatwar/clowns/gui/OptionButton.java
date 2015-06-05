@@ -5,7 +5,7 @@ import org.nationsatwar.palette.gui.GUIButton;
 public class OptionButton extends GUIButton {
 	
 	private String itemName = "";
-	private String action = "";
+	private String action = "Nothing";
 	
 	private int pageNumber = 0;
 

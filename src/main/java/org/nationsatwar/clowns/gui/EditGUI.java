@@ -54,8 +54,11 @@ public class EditGUI extends GUIScreen {
 		dialogue.setCursorPositionEnd();
 		
 		// Edit Dialogue Options
-		for (GUIButton dialogueOption : chatGUI.getDialogueOptions())
+		for (GUIButton dialogueOption : chatGUI.getDialogueOptions()) {
+			
 			addButton(dialogueOption);
+			dialogueOption.xPosition = windowX + 15;
+		}
 		
 		addDialogueOption = createDialogueOption("New Dialogue Option");
 	}
@@ -114,7 +117,8 @@ public class EditGUI extends GUIScreen {
 		if (button.equals(addDialogueOption)) {
 			
 			chatGUI.addDialogueOption();
-			super.initGui();
+			player.closeScreen();
+			GUIHandler.openGUI(this, false);
 		}
 		
 		for (OptionButton optionButton : chatGUI.getDialogueOptions()) {

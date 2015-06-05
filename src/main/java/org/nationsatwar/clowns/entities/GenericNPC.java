@@ -1,6 +1,8 @@
 package org.nationsatwar.clowns.entities;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.minecraft.crash.CrashReport;
@@ -11,15 +13,24 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ReportedException;
 import net.minecraft.world.World;
 
+import org.nationsatwar.clowns.actions.CustomAction;
+import org.nationsatwar.clowns.actions.NothingAction;
 import org.nationsatwar.clowns.gui.ChatGUI;
+import org.nationsatwar.clowns.gui.OptionButton;
+import org.nationsatwar.palette.WorldLocation;
+import org.nationsatwar.palette.database.JSONUtil;
 import org.nationsatwar.palette.gui.GUIHandler;
 
 public class GenericNPC extends EntityVillager {
 	
+	private static final String NBT_NAME = "NPC_Name";
+	private static final String NBT_WINDOWIDS = "Window_IDs";
+	
 	private String name;
 	
 	protected Map<Integer, ChatGUI> dialogueWindows = new HashMap<Integer, ChatGUI>();
-
+	private Map<String, CustomAction> customActions = new HashMap<String, CustomAction>();
+	
 	public GenericNPC(World worldIn) {
 		
 		super(worldIn);
@@ -36,6 +47,7 @@ public class GenericNPC extends EntityVillager {
 		setCustomNameTag(name);
 		
 		dialogueWindows.put(1, new ChatGUI(1));
+		initializeCustomActions();
 	}
 	
 	@Override
@@ -60,8 +72,38 @@ public class GenericNPC extends EntityVillager {
 		// Save all additional information here
 		try {
 			
-			tagCompound.setString("NPC_Name", name);
-			tagCompound.setString("dialogue", dialogueWindows.get(1).getDialogue());
+			tagCompound.setString(NBT_NAME, name);
+			List<Integer> windowIDs = new ArrayList<Integer>();
+			
+			for (int windowID : dialogueWindows.keySet()) {
+				
+				windowIDs.add(windowID);
+				
+				ChatGUI chatGUI = dialogueWindows.get(windowID);
+				String windowName = getWindowName(windowID);
+				
+				tagCompound.setString(windowName + "_Dialogue", chatGUI.getDialogue());
+				
+				int optionIndex = 1;
+				tagCompound.setInteger(windowName + "_OptionAmount", chatGUI.getDialogueOptions().size());
+				
+				for (OptionButton dialogueOption : chatGUI.getDialogueOptions()) {
+					
+					String optionName = windowName + "_Option_" + optionIndex;
+					optionIndex++;
+					
+					tagCompound.setString(optionName + "_Text", dialogueOption.displayString);
+					tagCompound.setString(optionName + "_Action", dialogueOption.getAction());
+					tagCompound.setString(optionName + "_Item", dialogueOption.getItemName());
+					tagCompound.setInteger(optionName + "_Page", dialogueOption.getPageNumber());
+				}
+			}
+			
+			int[] windowIDsArray = new int[windowIDs.size()];
+			for(int i = 0; i < windowIDs.size(); i++)
+				windowIDsArray[i] = windowIDs.get(i);
+			
+			tagCompound.setIntArray(NBT_WINDOWIDS, windowIDsArray); 
 			
 		} catch (Throwable throwable) {
 			
@@ -77,13 +119,36 @@ public class GenericNPC extends EntityVillager {
 		
 		super.readFromNBT(tagCompound);
 		
-		dialogueWindows.put(1, new ChatGUI(1));
+		initializeCustomActions();
 		
 		// Load all additional information here
 		try {
 			
-			name = tagCompound.getString("NPC_Name");
-			dialogueWindows.get(1).setDialogue(tagCompound.getString("dialogue"));
+			name = tagCompound.getString(NBT_NAME);
+			int[] windowIDs = tagCompound.getIntArray(NBT_WINDOWIDS);
+			
+			for (int windowID : windowIDs) {
+				
+				ChatGUI chatGUI = new ChatGUI(windowID);
+				dialogueWindows.put(windowID, chatGUI);
+				
+				String windowName = getWindowName(windowID);
+				
+				chatGUI.setDialogue(tagCompound.getString(windowName + "_Dialogue"));
+				
+				int optionAmount = tagCompound.getInteger(windowName + "_OptionAmount");
+				
+				for (int i = 1; i <= optionAmount; i++) {
+					
+					String optionName = windowName + "_Option_" + i;
+					OptionButton optionButton = chatGUI.addDialogueOption();
+					
+					optionButton.displayString = tagCompound.getString(optionName + "_Text");
+					optionButton.setAction(tagCompound.getString(optionName + "_Action"));
+					optionButton.setItemName(tagCompound.getString(optionName + "_Item"));
+					optionButton.setPageNumber(tagCompound.getInteger(optionName + "_Page"));
+				}
+			}
 			
 		} catch (Throwable throwable) {
 			
@@ -92,6 +157,21 @@ public class GenericNPC extends EntityVillager {
 			this.addEntityCrashInfo(crashreportcategory);
 			throw new ReportedException(crashreport);
 		}
+	}
+	
+	private static final String getWindowName(int windowID) {
+		
+		return "Window_" + windowID;
+	}
+	
+	protected void initializeCustomActions() {
+
+		customActions.put("Nothing", new NothingAction());
+	}
+	
+	protected void addCustomAction(String name, CustomAction action) {
+		
+		customActions.put(name, action);
 	}
 	
 	public String getName() {
@@ -200,5 +280,42 @@ public class GenericNPC extends EntityVillager {
 	public void deleteDialogueWindow(int windowID) {
 		
 		dialogueWindows.remove(windowID);
+	}
+	
+	public CustomAction getCustomAction(String customActionName) {
+		
+		return customActions.get(customActionName);
+	}
+	
+	public String getNextCustomActionName(String currentActionName) {
+		
+		String firstActionName = "";
+		boolean foundCurrentActionName = false;
+		
+		for (String customActionName : customActions.keySet()) {
+			
+			if (firstActionName.isEmpty())
+				firstActionName = customActionName;
+			
+			if (foundCurrentActionName)
+				return customActionName;
+			
+			if (customActionName.equals(currentActionName))
+				foundCurrentActionName = true;
+		}
+		
+		return firstActionName;
+	}
+	
+	public void spawnNPC(WorldLocation location) {
+		
+		setPositionAndUpdate(location.getPosX(), location.getPosY(), location.getPosZ());
+		location.getWorldObject().spawnEntityInWorld(this);
+		
+		NPCInfo npcInfo = new NPCInfo(this);
+		npcInfo = (NPCInfo) JSONUtil.loadObject("clowns", name, npcInfo);
+		
+		if (npcInfo != null)
+			npcInfo.loadNPCInfo(this);
 	}
 }

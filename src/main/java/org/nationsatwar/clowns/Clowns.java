@@ -46,7 +46,7 @@ public class Clowns {
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
 		
-		NPCCreator.addEntity(GenericNPC.class, "NPC");
+		NPCHook.registerNPC(GenericNPC.class, "NPC");
 	}
 	
 	@EventHandler
