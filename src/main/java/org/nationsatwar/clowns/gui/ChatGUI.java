@@ -85,7 +85,7 @@ public class ChatGUI extends GUIScreen {
 				// Fires Custom Action
 				CustomAction customAction = activeNPC.getCustomAction(optionButton.getAction());
 				if (customAction != null)
-					customAction.fireAction();
+					customAction.fireAction(player);
 				
 				// Gives item
 				String itemName = optionButton.getItemName();

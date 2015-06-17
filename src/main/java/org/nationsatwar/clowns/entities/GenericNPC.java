@@ -166,7 +166,7 @@ public class GenericNPC extends EntityVillager {
 	
 	protected void initializeCustomActions() {
 
-		customActions.put("Nothing", new NothingAction());
+		customActions.put("Nothing", new NothingAction(this));
 	}
 	
 	protected void addCustomAction(String name, CustomAction action) {
